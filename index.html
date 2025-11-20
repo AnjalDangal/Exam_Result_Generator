@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEB Exam Marks & Grade Sheet Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="brand-block">
+        <img src="assets/school-logo.svg" alt="School logo" id="school-logo-preview">
+        <div>
+          <p class="overline">Shree Janta Secondary School</p>
+          <h1>NEB Exam Marks Calculator &amp; Grade Sheet Generator</h1>
+          <p class="subtitle">Gauradaha-1, Jhapa • For +2 Level – School Use</p>
+        </div>
+      </div>
+      <div class="brand-config">
+        <label>School Name<input type="text" id="school-name" value="Shree Janta Secondary School"></label>
+        <label>Address<input type="text" id="school-address" value="Gauradaha-1, Jhapa"></label>
+        <label>Exam / Academic Session<input type="text" id="school-session" placeholder="e.g., 2081 Final Exam"></label>
+        <label>Accent Color<input type="color" id="accent-color" value="#0d5fde"></label>
+        <label class="file-label">Upload School Logo<input type="file" id="school-logo-input" accept="image/*"></label>
+      </div>
+    </header>
+
+    <section class="mode-toggle" role="tablist" aria-label="Mode selector">
+      <button class="toggle-btn active" data-target="single-mode" role="tab" aria-selected="true">Single Student Mode</button>
+      <button class="toggle-btn" data-target="bulk-mode" role="tab" aria-selected="false">Bulk Class Mode</button>
+    </section>
+
+    <section id="single-mode" class="mode-section active" role="tabpanel">
+      <form id="single-form" novalidate>
+        <div class="grid two-cols">
+          <label>Full Name<input type="text" id="student-name" required></label>
+          <label>Class<input type="text" id="student-class" placeholder="11 / 12" required></label>
+          <label>Faculty / Stream<input type="text" id="student-faculty"></label>
+          <label>Section<input type="text" id="student-section"></label>
+          <label>Roll Number<input type="text" id="student-roll" required></label>
+          <label>Exam Name<input type="text" id="student-exam" placeholder="Mid-Term / Final"></label>
+          <label class="file-label">Student Photo (optional)<input type="file" id="student-photo" accept="image/*"></label>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div>Subject</div><div>Full Marks</div><div>Credit Hrs</div><div>Obtained</div><div>Action</div>
+          </div>
+          <div id="subject-rows"></div>
+          <div class="table-footer">
+            <button type="button" id="add-subject">Add Subject</button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="primary" id="calc-single">Calculate Result</button>
+          <button type="button" class="secondary" id="reset-single">Reset Form</button>
+        </div>
+        <div class="error-area" id="single-errors"></div>
+      </form>
+
+      <div class="processing" id="single-processing" aria-live="polite" hidden>
+        <div class="spinner"></div>
+        <ul id="single-steps"></ul>
+      </div>
+
+      <div class="result-card" id="single-result" hidden>
+        <h3>Student Result</h3>
+        <div class="result-details" id="single-details"></div>
+        <div class="table-card compact" id="single-table-wrapper"></div>
+        <div class="result-summary" id="single-summary"></div>
+      </div>
+    </section>
+
+    <section id="bulk-mode" class="mode-section" role="tabpanel" hidden>
+      <form id="bulk-form" novalidate>
+        <div class="grid two-cols">
+          <label>Class<input type="text" id="bulk-class" placeholder="11 / 12"></label>
+          <label>Faculty / Stream<input type="text" id="bulk-faculty"></label>
+          <label>Section<input type="text" id="bulk-section"></label>
+          <label>Exam Name<input type="text" id="bulk-exam" placeholder="Terminal / Final"></label>
+        </div>
+
+        <div class="subject-config">
+          <label>Subjects (comma separated)<input type="text" id="bulk-subjects" placeholder="English, Nepali, Math"></label>
+          <label>Full Marks per subject<input type="number" id="bulk-fullmarks" value="100" min="1"></label>
+          <label>Credit hours (comma separated, default 1)<input type="text" id="bulk-credits" placeholder="3,3,2"></label>
+          <button type="button" id="set-subjects">Set Subjects</button>
+        </div>
+
+        <div class="table-card" id="bulk-table-card">
+          <div class="table-header" id="bulk-header"></div>
+          <div id="bulk-rows"></div>
+          <div class="table-footer">
+            <button type="button" id="add-bulk-row">Add Student Row</button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="primary" id="generate-bulk">Generate Grade Sheet</button>
+        </div>
+        <div class="error-area" id="bulk-errors"></div>
+      </form>
+
+      <div class="processing" id="bulk-processing" aria-live="polite" hidden>
+        <div class="spinner"></div>
+        <ul id="bulk-steps"></ul>
+      </div>
+
+      <div class="result-card" id="bulk-result" hidden>
+        <h3>Class Grade Sheet</h3>
+        <div class="result-details" id="bulk-details"></div>
+        <div class="table-card compact scrollable" id="bulk-table-wrapper"></div>
+        <div class="result-summary" id="bulk-summary"></div>
+      </div>
+    </section>
+
+    <section class="export-bar">
+      <div class="status" id="status-message"></div>
+      <div class="export-buttons">
+        <button id="export-csv" class="secondary">Download Grade Sheet as CSV</button>
+        <button id="print-btn" class="secondary">Print / Save as PDF</button>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
