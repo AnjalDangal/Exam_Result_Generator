@@ -9,6 +9,21 @@
 <body>
   <main class="app-shell">
     <header class="app-header">
+      <div class="brand-block">
+        <img src="assets/school-logo.svg" alt="School logo" id="school-logo-preview">
+        <div>
+          <p class="overline">Shree Janta Secondary School</p>
+          <h1>NEB Exam Marks Calculator &amp; Grade Sheet Generator</h1>
+          <p class="subtitle">Gauradaha-1, Jhapa • For +2 Level – School Use</p>
+        </div>
+      </div>
+      <div class="brand-config">
+        <label>School Name<input type="text" id="school-name" value="Shree Janta Secondary School"></label>
+        <label>Address<input type="text" id="school-address" value="Gauradaha-1, Jhapa"></label>
+        <label>Exam / Academic Session<input type="text" id="school-session" placeholder="e.g., 2081 Final Exam"></label>
+        <label>Accent Color<input type="color" id="accent-color" value="#0d5fde"></label>
+        <label class="file-label">Upload School Logo<input type="file" id="school-logo-input" accept="image/*"></label>
+      </div>
       <h1>NEB Exam Marks Calculator &amp; Grade Sheet Generator</h1>
       <p>For +2 Level – School Use</p>
     </header>
@@ -26,10 +41,13 @@
           <label>Faculty / Stream<input type="text" id="student-faculty"></label>
           <label>Section<input type="text" id="student-section"></label>
           <label>Roll Number<input type="text" id="student-roll" required></label>
+          <label>Exam Name<input type="text" id="student-exam" placeholder="Mid-Term / Final"></label>
+          <label class="file-label">Student Photo (optional)<input type="file" id="student-photo" accept="image/*"></label>
         </div>
 
         <div class="table-card">
           <div class="table-header">
+            <div>Subject</div><div>Full Marks</div><div>Credit Hrs</div><div>Obtained</div><div>Action</div>
             <div>Subject</div><div>Full Marks</div><div>Obtained</div><div>Action</div>
           </div>
           <div id="subject-rows"></div>
@@ -70,6 +88,7 @@
         <div class="subject-config">
           <label>Subjects (comma separated)<input type="text" id="bulk-subjects" placeholder="English, Nepali, Math"></label>
           <label>Full Marks per subject<input type="number" id="bulk-fullmarks" value="100" min="1"></label>
+          <label>Credit hours (comma separated, default 1)<input type="text" id="bulk-credits" placeholder="3,3,2"></label>
           <button type="button" id="set-subjects">Set Subjects</button>
         </div>
 
@@ -96,6 +115,7 @@
         <h3>Class Grade Sheet</h3>
         <div class="result-details" id="bulk-details"></div>
         <div class="table-card compact scrollable" id="bulk-table-wrapper"></div>
+        <div class="result-summary" id="bulk-summary"></div>
       </div>
     </section>
 
