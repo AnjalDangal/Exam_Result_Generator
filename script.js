@@ -130,6 +130,8 @@ setAccent(accentColor);
 
 // Subject rows setup
 function createSubjectRow(subject = '', full = 100, credit = 3, obtained = '') {
+// Subject rows setup
+function createSubjectRow(subject = '', full = 100, obtained = '') {
   const row = document.createElement('div');
   row.className = 'row';
   row.innerHTML = `
@@ -153,6 +155,8 @@ function seedSubjectRows() {
     { name: 'Social', credit: 2 }
   ];
   defaults.forEach(sub => subjectRowsContainer.appendChild(createSubjectRow(sub.name, 100, sub.credit)));
+  const defaults = ['English', 'Nepali', 'Math', 'Science', 'Social'];
+  defaults.forEach(sub => subjectRowsContainer.appendChild(createSubjectRow(sub)));
 }
 seedSubjectRows();
 addSubjectBtn.addEventListener('click', () => subjectRowsContainer.appendChild(createSubjectRow()));
@@ -180,6 +184,7 @@ function gradeFromPercentage(pct) {
 function calculateSingle(data) {
   const { student, subjects } = data;
   let totalFull = 0, totalObtained = 0, totalCredit = 0, totalPoints = 0;
+  let totalFull = 0, totalObtained = 0;
   const rows = subjects.map(sub => {
     const pct = (sub.obtained / sub.full) * 100;
     const grade = gradeFromPercentage(pct);
@@ -205,6 +210,11 @@ function calculateSingle(data) {
       credits: totalCredit
     }
   };
+    return { ...sub, pct: pct.toFixed(2), grade: grade.grade };
+  });
+  const overallPct = ((totalObtained / totalFull) * 100) || 0;
+  const overallGrade = gradeFromPercentage(overallPct);
+  return { student, rows, totals: { totalFull, totalObtained, pct: overallPct.toFixed(2), grade: overallGrade.grade, remark: overallGrade.remark } };
 }
 
 function validateSingle() {
@@ -238,6 +248,14 @@ function validateSingle() {
     },
     subjects
   };
+    const obtained = Number(row.querySelector('.sub-obtained').value);
+    if (!subName) return 'Subject name cannot be empty.';
+    if (Number.isNaN(full) || full <= 0) return 'Full marks must be valid numbers.';
+    if (Number.isNaN(obtained) || obtained < 0) return 'Obtained marks must be a positive number.';
+    if (obtained > full) return `Obtained marks for ${subName} cannot exceed full marks.`;
+    subjects.push({ name: subName, full, obtained });
+  }
+  return { student: { name, className: cls, faculty: document.getElementById('student-faculty').value.trim(), section: document.getElementById('student-section').value.trim(), roll }, subjects };
 }
 
 function showProcessing(panel, stepsEl, steps) {
@@ -281,12 +299,24 @@ function renderSingleResult(result) {
   const table = document.createElement('div');
   table.innerHTML = `
     <div class="table-header"><div>Subject</div><div>Full</div><div>Credit</div><div>Obtained</div><div>Grade (GP)</div></div>
+  singleDetails.innerHTML = `
+    <div><strong>Name:</strong> ${result.student.name}</div>
+    <div><strong>Class:</strong> ${result.student.className}</div>
+    <div><strong>Faculty:</strong> ${result.student.faculty || '-'} </div>
+    <div><strong>Section:</strong> ${result.student.section || '-'} </div>
+    <div><strong>Roll No.:</strong> ${result.student.roll}</div>
+  `;
+  const table = document.createElement('div');
+  table.innerHTML = `
+    <div class="table-header"><div>Subject</div><div>Full Marks</div><div>Obtained</div><div>Grade</div></div>
   `;
   result.rows.forEach(r => {
     const row = document.createElement('div');
     row.className = 'row';
     row.style.gridTemplateColumns = '2fr 1fr 1fr 1fr 1.2fr';
     row.innerHTML = `<div>${r.name}</div><div>${r.full}</div><div>${r.credit}</div><div>${r.obtained}</div><div>${r.grade} (${r.gp.toFixed(2)})</div>`;
+    row.style.gridTemplateColumns = '2fr 1fr 1fr 1fr';
+    row.innerHTML = `<div>${r.name}</div><div>${r.full}</div><div>${r.obtained}</div><div>${r.grade}</div>`;
     table.appendChild(row);
   });
   singleTableWrapper.innerHTML = '';
@@ -303,6 +333,11 @@ function renderSingleResult(result) {
   currentExportHeaders = ['Student', 'Class', 'Roll', 'Subject', 'Full Marks', 'Credit Hrs', 'Obtained', 'Grade', 'GP'];
   currentExportData = result.rows.map(r => [result.student.name, result.student.className, result.student.roll, r.name, r.full, r.credit, r.obtained, r.grade, r.gp.toFixed(2)]);
   currentExportData.push(['', '', '', 'TOTAL', result.totals.totalFull, result.totals.credits, result.totals.totalObtained, result.totals.grade, result.totals.gpa]);
+  `;
+  singleResult.hidden = false;
+  statusMessage.textContent = 'Result generated successfully.';
+  currentExportHeaders = ['Student', 'Class', 'Roll', 'Subject', 'Full Marks', 'Obtained', 'Grade'];
+  currentExportData = result.rows.map(r => [result.student.name, result.student.className, result.student.roll, r.name, r.full, r.obtained, r.grade]);
 }
 
 singleForm.addEventListener('submit', async (e) => {
@@ -347,6 +382,8 @@ function buildBulkHeader() {
   bulkHeader.style.display = 'grid';
   bulkHeader.style.gridTemplateColumns = `1.5fr 0.8fr ${'1fr '.repeat(bulkSubjects.length)} 70px`;
   bulkHeader.innerHTML = `<div>Student Name</div><div>Roll</div>${bulkSubjects.map((s, idx) => `<div>${s}<span class="pill">${bulkCredits[idx] || 1} cr</span></div>`).join('')}<div>Action</div>`;
+  bulkHeader.style.gridTemplateColumns = `1.5fr 0.8fr ${'1fr '.repeat(bulkSubjects.length)}`;
+  bulkHeader.innerHTML = `<div>Student Name</div><div>Roll</div>${bulkSubjects.map(s => `<div>${s}</div>`).join('')}`;
 }
 
 function createBulkRow(name = '', roll = '', marks = []) {
@@ -430,6 +467,7 @@ function calculateBulk(students) {
       const pct = (m / bulkFullMark) * 100;
       const g = gradeFromPercentage(pct);
       return { subject: bulkSubjects[idx], mark: m, grade: g.grade, gp: g.gp, credit: bulkCredits[idx] || 1 };
+      return { subject: bulkSubjects[idx], mark: m, grade: gradeFromPercentage(pct).grade };
     });
     const total = student.marks.reduce((a, b) => a + b, 0);
     const fullTotal = bulkFullMark * bulkSubjects.length;
@@ -439,6 +477,7 @@ function calculateBulk(students) {
     const totalCredits = subjectResults.reduce((sum, r) => sum + r.credit, 0);
     const gpa = totalCredits ? (totalPoints / totalCredits) : 0;
     return { ...student, subjectResults, total, pct: pct.toFixed(2), grade: overall.grade, gpa: gpa.toFixed(2), credits: totalCredits };
+    return { ...student, subjectResults, total, pct: pct.toFixed(2), grade: overall.grade };
   }).sort((a, b) => b.pct - a.pct);
 }
 
@@ -476,6 +515,19 @@ function renderBulk(results) {
     const row = document.createElement('div');
     row.className = 'row';
     row.style.gridTemplateColumns = `0.8fr 1.5fr ${'1fr '.repeat(bulkSubjects.length + 4)}`;
+  bulkDetails.innerHTML = `
+    <div><strong>Class:</strong> ${info.className || '-'}</div>
+    <div><strong>Faculty:</strong> ${info.faculty || '-'}</div>
+    <div><strong>Section:</strong> ${info.section || '-'}</div>
+    <div><strong>Exam:</strong> ${info.exam || '-'}</div>
+    <div><strong>Full Marks per subject:</strong> ${bulkFullMark}</div>
+  `;
+  const table = document.createElement('div');
+  table.innerHTML = `<div class="table-header">${['Roll', 'Name', ...bulkSubjects, 'Total', '%', 'Grade'].map(h => `<div>${h}</div>`).join('')}</div>`;
+  results.forEach((res, idx) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.gridTemplateColumns = `0.8fr 1.5fr ${'1fr '.repeat(bulkSubjects.length + 3)}`;
     row.innerHTML = `
       <div>${res.roll}</div>
       <div>${res.name}</div>
@@ -509,6 +561,10 @@ function renderBulk(results) {
   statusMessage.textContent = 'Class grade sheet ready.';
   currentExportHeaders = ['Roll', 'Name', ...bulkSubjects, 'Total', 'Percentage', 'Grade', 'GPA'];
   currentExportData = results.map(r => [r.roll, r.name, ...r.subjectResults.map(sr => sr.mark), r.total, r.pct, r.grade, r.gpa]);
+  bulkResult.hidden = false;
+  statusMessage.textContent = 'Class grade sheet ready.';
+  currentExportHeaders = ['Roll', 'Name', ...bulkSubjects, 'Total', 'Percentage', 'Grade'];
+  currentExportData = results.map(r => [r.roll, r.name, ...r.subjectResults.map(sr => sr.mark), r.total, r.pct, r.grade]);
 }
 
 bulkForm.addEventListener('submit', async (e) => {
